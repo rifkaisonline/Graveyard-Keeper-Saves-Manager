@@ -1,0 +1,17 @@
+The provided .exe software allows the user to manage save files for the game "Graveyard Keeper" through a menu system. 
+
+This software includes options to create a backup of the current save files, restore a previously saved backup, or quit the script.
+
+
+
+#Saves
+This option creates a backup of the current save files for the game "Graveyard Keeper" by compressing the files located in 
+"C:\Users\[username]\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper" and saving the compressed archive 
+to "C:\Users\[username]\Documents\Graveyard Keeper Saves\SaveGK_[current year]-[current month]-[current day]_[current hour]h[current minutes]" with a .zip file extension. 
+If the destination path does not exist, it will be created.
+
+
+#Restore
+This option restores a saved backup of "Graveyard Keeper" save files by first prompting the user to select a .zip file to restore using an Open File Dialog. 
+It then moves the current save files located in "C:\Users\[username]\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper" to a subdirectory called "Old" within the save file directory. 
+The function then extracts the selected .zip file to "C:\Users[username]\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper" to restore the saved backup.
