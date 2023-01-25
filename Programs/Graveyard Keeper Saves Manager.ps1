@@ -84,8 +84,7 @@ function restore(){
 
     $savespath = "C:\Users\$userfolder\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper"
 
-    if(!(test-path $savespath\Old)){new-item -ItemType "directory" -Path $savespath\Old -force} #test si le dossier old existe et le cree si necessaire
-
+    if(!(test-path $savespath\Old)){new-item -ItemType "directory" -Path $savespath\Old -force} 
 
     Get-ChildItem -path $savespath *.* | Move-Item -destination $savespath\Old -force -erroraction silentlycontinue
     cls
