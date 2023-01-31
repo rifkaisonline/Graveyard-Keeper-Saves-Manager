@@ -1,6 +1,9 @@
 ﻿# This script is a saves manager for the game "Graveyard Keeper" by rifkais.online
 # It allows the user to create a zip archive of their save files and restore them later
 
+$user = $env:USERNAME
+$defaultFilesLocation = "C:\Users\$user\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper"
+$savedFilesLocation = "C:\Users\$user\Documents\Graveyard Keeper Saves\"
 
 # Show-Menu function creates the main menu of the script
 function Show-Menu {
@@ -18,39 +21,30 @@ function Show-Menu {
 }
 
 
-
-
-
-
 # save function creates a zip archive of the user's save files
 function save(){
     # Gets the current date and time
-    $year = get-date -Format "yyyy"
-    $month=get-date -Format "MM"
-    $day = (get-date).day
-    $hour=get-date -Format "HH"
-    $minutes=get-date -Format "mm"
-    $user = $env:USERNAME
+    $formatedName = get-date -format "yyyy-MM-dd_HH\hmm"
 
     # Sets the destination path and name of the zip archive
-    $destinationpath = "C:\Users\$user\Documents\Graveyard Keeper Saves\SaveGK_"+"$year"+"-"+"$month"+"-"+"$day"+"_"+"$hour"+"h"+"$minutes"+".zip"
-    $zipname = "SaveGK_"+"$year"+"-"+"$month"+"-"+"$day"+"_"+"$hour"+"h"+"$minutes"+".zip"
+    $zipname = "SaveGK_$formatedName.zip"
 
     # If the destination folder doesn't exist, it creates it
-    if(!(test-path $destinationpath )){new-item -Path $destinationpath  -force }
+    if(!(test-path $savedFilesLocation )){new-item -Path $savedFilesLocation  -force }
 
     # Tries to create the zip archive, if it fails, it tells the user to close the game
     try{
-    Compress-Archive "C:\Users\$user\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper\*" -DestinationPath "$destinationpath" -force -ErrorAction SilentlyContinue
-    cls
-    Write-host "Done ! " -ForegroundColor Green
-    Write-host "$zipname created " -ForegroundColor Green
-    Write-host "You can find it in Documents\Graveyard Keeper Saves " -ForegroundColor Green
-    Write-host "Press enter to go back to the menu"
-    pause
-    }catch {
-    Write-host "You need to close the game =D" -ForegroundColor Red -BackgroundColor Yellow
-    pause}
+        Compress-Archive "$defaultFilesLocation\*" -DestinationPath "$savedFilesLocation$zipname" -force -ErrorAction SilentlyContinue
+        cls
+        Write-host "Done ! " -ForegroundColor Green
+        Write-host "$zipname created " -ForegroundColor Green
+        Write-host "You can find it in $savedFilesLocation " -ForegroundColor Green
+        Write-host "Press enter to go back to the menu"
+        pause
+    }catch{
+        Write-host "You need to close the game =D" -ForegroundColor Red -BackgroundColor Yellow
+        pause
+    }
 }
 
 
@@ -60,68 +54,58 @@ function restore(){
 
     pause
     Function Open-File()
-      {
-   
+    {  
         Function Get-Filename($initialDirectory){
-                [System.Reflection.Assembly]::LoadWithPartialName("System.windows.Forms") |
-                Out-Null
+            [System.Reflection.Assembly]::LoadWithPartialName("System.windows.Forms") |
+            Out-Null
 
-                $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
-                $OpenFileDialog.initialDirectory = $initialDirectory
-                $OpenFileDialog.filter = "zip (*.zip) | *.zip"
+            $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+            $OpenFileDialog.initialDirectory = $initialDirectory
+            $OpenFileDialog.filter = "zip (*.zip) | *.zip"
 
-                $OpenFileDialog.ShowDialog() | Out-Null
-                $OpenFileDialog.filename
+            $OpenFileDialog.ShowDialog() | Out-Null
+            $OpenFileDialog.filename
      
-     }
+        }
         $filepath = Get-filename
-  
         return $filepath
-     }
-    $path = Open-File #recupere le chemin du fichier zip
-    $userfolder = $env:USERNAME
+    }
+    $selectedSave = Open-File $savedFilesLocation #recupere le chemin du fichier zip
 
+    if(!(test-path $defaultFilesLocation\Old)){new-item -ItemType "directory" -Path $defaultFilesLocation\Old -force} 
 
-    $savespath = "C:\Users\$userfolder\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper"
-
-    if(!(test-path $savespath\Old)){new-item -ItemType "directory" -Path $savespath\Old -force} 
-
-    Get-ChildItem -path $savespath *.* | Move-Item -destination $savespath\Old -force -erroraction silentlycontinue
+    Get-ChildItem -path $defaultFilesLocation *.* | Move-Item -destination $defaultFilesLocation\Old -force -erroraction silentlycontinue
     cls
     write-host "Done !" -ForegroundColor white -backgroundColor blue
-    write-host "Your saves files are in $savespath" -ForegroundColor white -backgroundColor blue
+    write-host "Your saves files are in $defaultFilesLocation" -ForegroundColor white -backgroundColor blue
 
 
-    expand-archive -literalpath "$path" -destinationpath $savespath -force
+    expand-archive -literalpath "$selectedSave" -destinationpath $defaultFilesLocation -force
 
-    write-host "Your old save as moved on $savespath\Old" -ForegroundColor white -backgroundcolor blue 
+    write-host "Your old save as moved on $defaultFilesLocation\Old" -ForegroundColor white -backgroundcolor blue 
     Write-host "Press enter to go back to the menu"
     pause
     
 }
 
 
-
-
-
-
 do
-{
-     
-     show-menu
-     $input = Read-Host "Please make a choice"
+{    
+    show-menu
+    $input = Read-Host "Please make a choice"
 
-     switch ($input)
-     {
-           "1" {
-                cls
-                save
-        } "2" {
-                cls 
-		restore
-
-           }
-     }
-     
+    switch ($input)
+    {
+        "1" 
+        {
+            cls
+            save
+        }   
+        "2" 
+        {
+            cls 
+            restore
+        }
+    }     
 }
 until ($input -eq "q")
